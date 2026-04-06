@@ -1,0 +1,167 @@
+blueprint:
+  name: "IKEA Bilresa Light Control"
+  author: "kemoxi"
+  description: >
+    Hybrid light control blueprint for the IKEA Bilresa Dual Button remote.
+
+    Functions:
+    - Button 1 single press: Toggle light
+    - Button 1 hold: Dim brighter
+    - Button 2 hold: Dim darker
+    - Button 2 double press: Toggle between two scenes
+      - Warm scene: 40% brightness, 2700K
+      - Cool/bright scene: 100% brightness, 4000K
+
+    This blueprint uses a hybrid approach:
+    event entities detect button actions and sensor entities are
+    used to keep the dimming loop active during hold actions.
+  domain: automation
+  homeassistant:
+    min_version: "2024.1.0"
+
+  input:
+    light_entity:
+      name: Light
+      description: Target light to control.
+      selector:
+        entity:
+          domain: light
+
+    event_btn_1:
+      name: Event Button 1
+      description: Event entity for the upper button.
+      selector:
+        entity:
+          domain: event
+
+    sensor_btn_1:
+      name: Sensor Button 1
+      description: Sensor entity used for hold-state detection of the upper button.
+      selector:
+        entity:
+          domain: sensor
+
+    event_btn_2:
+      name: Event Button 2
+      description: Event entity for the lower button.
+      selector:
+        entity:
+          domain: event
+
+    sensor_btn_2:
+      name: Sensor Button 2
+      description: Sensor entity used for hold-state detection of the lower button.
+      selector:
+        entity:
+          domain: sensor
+
+mode: single
+max_exceeded: silent
+
+variables:
+  target_light: !input light_entity
+  e1: !input event_btn_1
+  s1: !input sensor_btn_1
+  e2: !input event_btn_2
+  s2: !input sensor_btn_2
+
+trigger:
+  - platform: state
+    entity_id: !input event_btn_1
+    id: t1_any
+
+  - platform: state
+    entity_id: !input event_btn_2
+    id: t2_any
+
+condition:
+  - condition: template
+    value_template: >-
+      {{ trigger.from_state is defined
+         and trigger.from_state is not none
+         and trigger.from_state.state not in ['unknown', 'unavailable'] }}
+
+action:
+  - variables:
+      current_sensor: >-
+        {% if trigger.id == 't1_any' %}
+          {{ s1 }}
+        {% else %}
+          {{ s2 }}
+        {% endif %}
+      is_btn_1: "{{ trigger.id == 't1_any' }}"
+      event_type: "{{ trigger.to_state.attributes.event_type | default('') }}"
+      current_kelvin: "{{ state_attr(target_light, 'color_temp_kelvin') | int(0) }}"
+
+  - choose:
+      - conditions: "{{ is_btn_1 }}"
+        sequence:
+          - choose:
+              - conditions: "{{ event_type == 'multi_press_1' }}"
+                sequence:
+                  - service: light.toggle
+                    target:
+                      entity_id: !input light_entity
+                    data:
+                      transition: 1
+
+              - conditions: "{{ event_type == 'long_press' }}"
+                sequence:
+                  - repeat:
+                      while:
+                        - condition: template
+                          value_template: "{{ is_state(current_sensor, '1') }}"
+                      sequence:
+                        - service: light.turn_on
+                          target:
+                            entity_id: !input light_entity
+                          data:
+                            brightness_step_pct: 8
+                            transition: 0.2
+                        - delay:
+                            milliseconds: 200
+
+      - conditions: "{{ not is_btn_1 }}"
+        sequence:
+          - choose:
+              - conditions: "{{ event_type == 'long_press' }}"
+                sequence:
+                  - repeat:
+                      while:
+                        - condition: template
+                          value_template: "{{ is_state(current_sensor, '1') }}"
+                        - condition: template
+                          value_template: "{{ state_attr(target_light, 'brightness') | int(0) > 10 }}"
+                      sequence:
+                        - service: light.turn_on
+                          target:
+                            entity_id: !input light_entity
+                          data:
+                            brightness_step_pct: -8
+                            transition: 0.2
+                        - delay:
+                            milliseconds: 200
+
+              - conditions: "{{ event_type == 'multi_press_2' }}"
+                sequence:
+                  - choose:
+                      - conditions: "{{ current_kelvin > 3000 }}"
+                        sequence:
+                          - service: light.turn_on
+                            target:
+                              entity_id: !input light_entity
+                            data:
+                              brightness_pct: 40
+                              color_temp_kelvin: 2700
+                              transition: 1
+                    default:
+                      - service: light.turn_on
+                        target:
+                          entity_id: !input light_entity
+                        data:
+                          brightness_pct: 100
+                          color_temp_kelvin: 4000
+                          transition: 1
+
+  - delay:
+      milliseconds: 150
