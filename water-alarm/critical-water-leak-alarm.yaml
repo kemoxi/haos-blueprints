@@ -1,0 +1,125 @@
+blueprint:
+  name: Critical water leak alarm with repeat and optional power-off
+  author: "kemoxi"
+  description: >
+    Sends critical mobile notifications when water is detected, repeats the alert
+    until the sensor is dry again, and can optionally switch off a device such as
+    a dishwasher or smart plug.
+  domain: automation
+  input:
+    water_sensor:
+      name: Water sensor
+      description: Binary sensor that turns on when water is detected.
+      selector:
+        entity:
+          domain: binary_sensor
+
+    notify_devices:
+      name: Mobile devices to notify
+      description: Select one or more Home Assistant mobile_app devices.
+      selector:
+        device:
+          integration: mobile_app
+          multiple: true
+
+    alarm_title:
+      name: Alarm title
+      description: Title for the first notification.
+      default: "🚨 WASSERALARM!"
+      selector:
+        text:
+
+    alarm_message:
+      name: Alarm message
+      description: Message for the first notification.
+      default: "Wasser erkannt – bitte sofort prüfen!"
+      selector:
+        text:
+
+    repeat_message:
+      name: Repeat message
+      description: Message for repeated notifications while water is still detected.
+      default: "🚨 WASSERALARM! Sensor meldet weiterhin Wasser."
+      selector:
+        text:
+
+    repeat_delay:
+      name: Repeat interval
+      description: Time between repeated notifications.
+      default: "00:01:00"
+      selector:
+        duration:
+
+    power_switch:
+      name: Optional switch to turn off
+      description: Optional smart plug or switch to turn off when water is detected.
+      default: {}
+      selector:
+        entity:
+          domain: switch
+
+mode: restart
+max_exceeded: silent
+
+variables:
+  water_sensor: !input water_sensor
+  notify_devices: !input notify_devices
+  alarm_title: !input alarm_title
+  alarm_message: !input alarm_message
+  repeat_message: !input repeat_message
+  repeat_delay: !input repeat_delay
+  power_switch: !input power_switch
+
+trigger:
+  - platform: state
+    entity_id: !input water_sensor
+    to: "on"
+
+condition: []
+
+action:
+  - repeat:
+      for_each: !input notify_devices
+      sequence:
+        - service: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+          data:
+            title: "{{ alarm_title }}"
+            message: "{{ alarm_message }}"
+            data:
+              push:
+                sound:
+                  name: default
+                  critical: 1
+                  volume: 1.0
+        - delay: "00:00:02"
+
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ power_switch != none and power_switch != '' }}"
+        sequence:
+          - service: switch.turn_off
+            target:
+              entity_id: !input power_switch
+
+  - repeat:
+      while:
+        - condition: state
+          entity_id: !input water_sensor
+          state: "on"
+      sequence:
+        - repeat:
+            for_each: !input notify_devices
+            sequence:
+              - service: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                data:
+                  title: "{{ alarm_title }}"
+                  message: "{{ repeat_message }} ({{ now().strftime('%H:%M:%S') }})"
+                  data:
+                    push:
+                      sound:
+                        name: default
+                        critical: 1
+                        volume: 1.0
+              - delay: "00:00:02"
+        - delay: !input repeat_delay
