@@ -4,12 +4,12 @@ Minimal Home Assistant blueprint for critical water leak alerts with repeat noti
 
 ## Quick Install
 
-[![Import Blueprint](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fraw.githubusercontent.com%2Fkemoxi%2Fhaos-blueprints%2Fmain%2Fwater-alarm%2Fcritical_water_leak_alarm.yaml)
+[![Import Blueprint](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fraw.githubusercontent.com%2Fkemoxi%2Fhaos-blueprints%2Fmain%2Fwater-alarm%2Fcritical-water-leak-alarm.yaml)
 
 ## Manual Install
 
 - Import this raw GitHub URL in Home Assistant:
-  `https://raw.githubusercontent.com/kemoxi/haos-blueprints/main/water-alarm/critical_water_leak_alarm.yaml`
+  `https://raw.githubusercontent.com/kemoxi/haos-blueprints/main/water-alarm/critical-water-leak-alarm.yaml`
 - Or copy the YAML file manually to:
   `config/blueprints/automation/`
 
