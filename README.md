@@ -13,8 +13,8 @@ This repository contains small, focused Home Assistant blueprints with simple se
 
 | Blueprint | Description | Quick Install |
 |---|---|---|
-| [IKEA Bilresa Dual Button](ikea-bilresa-dual-button/) | Toggle light, dim up/down, toggle warm/cool scene | [![Import Blueprint](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fraw.githubusercontent.com%2Fkemoxi%2Fhaos-blueprints%2Fmain%2Fikea-bilresa-dual-button%2Fikea-bilresa-dual-button.yaml) |
-| [Water Alarm](water-alarm/) | Critical water leak alerts with repeat notifications and optional power-off | [![Import Blueprint](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fraw.githubusercontent.com%2Fkemoxi%2Fhaos-blueprints%2Fmain%2Fwater-alarm%2Fcritical_water_leak_alarm.yaml) |
+| [IKEA Bilresa Dual Button](ikea-bilresa-dual-button/) | Toggle light, dim up/down, toggle warm/cool scene | [![Open your Home Assistant instance and show the blueprint import dialog with a specific blueprint pre-filled.](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fraw.githubusercontent.com%2Fkemoxi%2Fhaos-blueprints%2Fmain%2Fikea-bilresa-dual-button%2Fikea-bilresa-dual-button.yaml) |
+| [Water Alarm](water-alarm/) | Critical water leak alerts with repeat notifications and optional power-off | [![Open your Home Assistant instance and show the blueprint import dialog with a specific blueprint pre-filled.](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fraw.githubusercontent.com%2Fkemoxi%2Fhaos-blueprints%2Fmain%2Fwater-alarm%2Fcritical-water-leak-alarm.yaml) |
 
 ## Install
 
